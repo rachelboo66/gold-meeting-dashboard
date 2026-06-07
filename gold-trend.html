@@ -1,0 +1,2172 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>黄金交易会议看板</title>
+  <meta name="theme-color" content="#10110f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="黄金会议">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="gold-app-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="gold-app-icon.svg">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f1e8;
+      --panel: #fffefa;
+      --panel-soft: #f8f4e9;
+      --text: #171612;
+      --muted: #716b5e;
+      --gold: #c6a04a;
+      --gold-dark: #826421;
+      --black: #10110f;
+      --green: #16865a;
+      --red: #c7414d;
+      --blue: #8e6b20;
+      --border: rgba(83, 73, 49, 0.16);
+      --shadow: 0 18px 48px rgba(24, 22, 16, 0.08);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    main {
+      width: min(1380px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 34px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 18px;
+      padding: 18px;
+      border: 1px solid rgba(185, 135, 34, 0.55);
+      border-radius: 8px;
+      background: var(--black);
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, #f7e6a6, #c6a04a 58%, #8d6b24);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), var(--shadow);
+      color: #11110e;
+      font-size: 22px;
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      color: #fbf3d8;
+      font-size: clamp(24px, 3.4vw, 38px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    h2, h3 {
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h2 { font-size: 16px; }
+    h3 { font-size: 14px; }
+
+    .subtitle {
+      margin: 7px 0 0;
+      color: #d8caa8;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      border: 1px solid rgba(214, 184, 103, 0.46);
+      background: rgba(255, 250, 232, 0.07);
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: #f4e8c6;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .pulse {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #d5b45d;
+      box-shadow: 0 0 0 6px rgba(213, 180, 93, 0.13);
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: minmax(760px, 1fr) 390px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .market-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 0 0 16px;
+    }
+
+    .strip-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .strip-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 3px;
+      background: linear-gradient(90deg, #e0b94f, var(--gold-dark));
+    }
+
+    .strip-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .strip-card strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.18;
+    }
+
+    .strip-card small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      margin-top: 7px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel.pad { padding: 16px; }
+
+    .chart-panel {
+      min-height: 640px;
+      display: flex;
+      flex-direction: column;
+      overflow-x: auto;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: #f8f0dc;
+    }
+
+    .source {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .tv-chart {
+      flex: 1;
+      min-height: 560px;
+      min-width: 720px;
+    }
+
+    .multi-chart-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .tf-chart {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .tf-chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-soft);
+    }
+
+    .tf-chart-head strong {
+      font-size: 14px;
+    }
+
+    .tf-chart-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tf-frame {
+      width: 100%;
+      height: 390px;
+      border: 0;
+      display: block;
+    }
+
+    .side {
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .strategy-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .meeting-card,
+    .scenario,
+    .risk-card {
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .meeting-card {
+      display: grid;
+      gap: 12px;
+    }
+
+    .status-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .status-line span,
+    .field label,
+    .mini-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      border-radius: 6px;
+      padding: 5px 9px;
+      background: rgba(184, 137, 34, 0.12);
+      color: #7b5813;
+      border: 1px solid rgba(184, 137, 34, 0.24);
+      font-weight: 800;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .tag.red {
+      color: #9e2d38;
+      background: rgba(199, 65, 77, 0.1);
+      border-color: rgba(199, 65, 77, 0.22);
+    }
+
+    .tag.green {
+      color: #126a48;
+      background: rgba(22, 134, 90, 0.1);
+      border-color: rgba(22, 134, 90, 0.22);
+    }
+
+    .symbol-card,
+    .permission-list,
+    .notes,
+    .scenarios {
+      display: grid;
+      gap: 10px;
+    }
+
+    .symbol-row,
+    .permission-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .symbol-row:last-child,
+    .permission-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .symbol-row span,
+    .permission-row span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .symbol-row strong,
+    .permission-row strong {
+      text-align: right;
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .widget-box {
+      height: 430px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--panel-soft);
+      margin-top: 12px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 38px;
+      color: var(--text);
+      background: #fffdf7;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font: inherit;
+      font-size: 14px;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid rgba(184, 137, 34, 0.26);
+      border-color: rgba(184, 137, 34, 0.44);
+    }
+
+    .rr-result {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .rr-box {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fffdf7;
+      min-width: 0;
+    }
+
+    .rr-box strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 16px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .report-summary {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .report-line {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 12px;
+      background: var(--panel-soft);
+    }
+
+    .report-line span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .report-line strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .event-list {
+      display: grid;
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .event-item {
+      display: grid;
+      grid-template-columns: 94px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: var(--panel-soft);
+      font-size: 13px;
+    }
+
+    .event-time {
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .event-name {
+      min-width: 0;
+      font-weight: 750;
+    }
+
+    .event-impact {
+      border-radius: 6px;
+      padding: 4px 7px;
+      color: #9e2d38;
+      background: rgba(199, 65, 77, 0.1);
+      border: 1px solid rgba(199, 65, 77, 0.2);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .event-impact.positive {
+      color: #08745c;
+      background: rgba(8, 116, 92, 0.1);
+      border-color: rgba(8, 116, 92, 0.2);
+    }
+
+    .event-impact.mixed {
+      color: #785817;
+      background: rgba(160, 116, 24, 0.12);
+      border-color: rgba(160, 116, 24, 0.22);
+    }
+
+    .event-impact.overdue {
+      color: #9e2d38;
+      background: rgba(199, 65, 77, 0.14);
+    }
+
+    .source-link {
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .source-link:hover { text-decoration: underline; }
+
+    .summary-band {
+      margin-top: 16px;
+      border-left: 4px solid var(--gold);
+      background: #fff3c8;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .summary-item {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel-soft);
+    }
+
+    .summary-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .summary-item strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .scenario {
+      display: grid;
+      gap: 9px;
+    }
+
+    .scenario p,
+    .risk-card p,
+    .note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.48;
+    }
+
+    .scenario-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .risk-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .note {
+      padding-left: 12px;
+      border-left: 3px solid var(--gold);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel-soft);
+    }
+
+    .section-jump {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      margin-top: 12px;
+      padding: 8px 12px;
+      border: 1px solid var(--gold-deep);
+      border-radius: 4px;
+      color: var(--black);
+      background: var(--gold-soft);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    h2 {
+      color: var(--black);
+    }
+
+    .panel.pad > h2::after,
+    .panel-head h2::after {
+      content: "";
+      display: inline-block;
+      width: 22px;
+      height: 2px;
+      margin-left: 8px;
+      vertical-align: middle;
+      background: var(--gold);
+    }
+
+    table {
+      width: 100%;
+      min-width: 1040px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 11px 12px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #fbf3d8;
+      font-weight: 700;
+      background: var(--black);
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .matrix-input {
+      width: 118px;
+      min-height: 34px;
+      padding: 6px 8px;
+      font-size: 13px;
+    }
+
+    .matrix-select {
+      width: 138px;
+      min-height: 34px;
+      padding: 6px 8px;
+      font-size: 13px;
+    }
+
+    .matrix-input[readonly],
+    .matrix-select:disabled {
+      color: var(--text);
+      background: transparent;
+      border-color: transparent;
+      opacity: 1;
+      padding-left: 0;
+      font-weight: 760;
+      appearance: none;
+    }
+
+    .footer-note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .tradingview-widget-container,
+    .tradingview-widget-container__widget {
+      width: 100%;
+      height: 100%;
+    }
+
+    .tradingview-widget-copyright { display: none; }
+
+    @media (max-width: 1180px) {
+      .dashboard,
+      .strategy-grid,
+      .market-strip,
+      .multi-chart-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 980px) {
+      main {
+        width: min(100% - 22px, 760px);
+        padding-top: 18px;
+      }
+
+      .topbar,
+      .panel-head {
+        flex-direction: column;
+      }
+
+      .live-badge {
+        white-space: normal;
+      }
+
+      .chart-panel { min-height: 640px; }
+      .tv-chart { min-height: 560px; }
+      .tf-frame { height: 360px; }
+      .source { text-align: left; }
+      .risk-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      .brand { align-items: flex-start; }
+      .mark {
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+      }
+
+      .field-grid,
+      .rr-result,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .event-item {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-panel { min-height: 640px; }
+      .tv-chart { min-height: 560px; }
+      .widget-box { height: 390px; }
+    }
+
+    /* Premium terminal redesign */
+    :root {
+      --bg: #f4f1e8;
+      --panel: #fffefa;
+      --panel-soft: #f8f4e9;
+      --text: #151515;
+      --muted: #615d52;
+      --gold: #c6a04a;
+      --gold-dark: #806323;
+      --black: #10110f;
+      --border: #ded6c4;
+      --shadow: 0 14px 38px rgba(26, 24, 18, 0.07);
+      font-family: "PingFang SC", "Microsoft YaHei", Inter, system-ui, sans-serif;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 18% 0%, rgba(224, 197, 118, 0.16), transparent 32%),
+        linear-gradient(180deg, #fbf8ef 0%, #f4f1e8 42%, #eeeadf 100%);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+    main { width: min(1480px, calc(100% - 40px)); padding-top: 18px; }
+    .topbar {
+      margin-bottom: 12px;
+      padding: 18px 22px;
+      border-color: #2e2d28;
+      box-shadow: 0 20px 52px rgba(18, 19, 17, 0.14);
+      background:
+        linear-gradient(135deg, rgba(16, 17, 15, 1), rgba(35, 31, 22, 0.98) 58%, rgba(22, 21, 17, 1)),
+        var(--black);
+    }
+    .topbar-market {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 16px;
+      min-width: 420px;
+    }
+    .header-quote {
+      min-width: 300px;
+      padding-left: 18px;
+      border-left: 1px solid #3c392f;
+      text-align: right;
+    }
+    .header-quote-label { display: block; color: #bdb8aa; font-size: 12px; }
+    .header-quote-price {
+      display: block;
+      margin-top: 2px;
+      color: #d7b865;
+      font-size: 32px;
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+      transition: color 180ms ease, background-color 180ms ease;
+    }
+    .header-quote-meta { display: block; margin-top: 3px; color: #aaa69a; font-size: 11px; }
+    .tv-live-quote,
+    .tv-cockpit-quote {
+      width: 100%;
+      min-height: 70px;
+      overflow: hidden;
+    }
+    .tv-live-quote .tradingview-widget-container,
+    .tv-live-quote .tradingview-widget-container__widget,
+    .tv-cockpit-quote .tradingview-widget-container,
+    .tv-cockpit-quote .tradingview-widget-container__widget {
+      width: 100%;
+      min-height: 68px;
+    }
+    h1 { font-size: clamp(25px, 3vw, 34px); }
+    h2 { font-size: 20px; font-weight: 720; }
+    h3 { font-size: 16px; }
+    .subtitle, .source, .strip-card small, .footer-note { font-size: 13px; color: var(--muted); }
+    .panel, .strip-card { box-shadow: var(--shadow); }
+    .panel { border-radius: 6px; }
+    .panel.pad { padding: 20px; }
+    .panel.pad > h2::after, .panel-head h2::after { width: 18px; height: 2px; }
+
+    .market-strip { gap: 0; margin-bottom: 12px; border: 1px solid var(--border); background: rgba(255, 254, 250, 0.94); box-shadow: 0 12px 32px rgba(29, 27, 20, 0.055); }
+    .strip-card { border: 0; border-right: 1px solid var(--border); border-radius: 0; padding: 12px 16px; box-shadow: none; }
+    .strip-card:last-child { border-right: 0; }
+    .strip-card::before { display: none; }
+    .strip-card strong { font-size: 20px; font-variant-numeric: tabular-nums; }
+    .strip-card span { margin-bottom: 3px; font-size: 13px; }
+
+    .decision-cockpit {
+      display: grid;
+      grid-template-columns: 1.15fr 2fr 1fr;
+      margin-bottom: 14px;
+      border: 1px solid #26241d;
+      border-radius: 6px;
+      overflow: hidden;
+      background: linear-gradient(135deg, #10110f, #1c1a14);
+      color: #fffefa;
+    }
+
+    .cockpit-block { padding: 18px 20px; border-right: 1px solid #343127; min-width: 0; }
+    .cockpit-block:last-child { border-right: 0; }
+    .cockpit-label { display: block; color: #bdb8aa; font-size: 12px; margin-bottom: 5px; }
+    .cockpit-price { display: block; color: #d7b865; font-size: 36px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .price-up { color: #6ad6a8 !important; background-color: rgba(24, 115, 88, 0.16); }
+    .price-down { color: #ff8e96 !important; background-color: rgba(182, 62, 66, 0.16); }
+    .price-tick { border-radius: 3px; transition: color 180ms ease, background-color 180ms ease; }
+    .cockpit-status { display: inline-block; margin-top: 10px; padding: 4px 8px; border: 1px solid #806323; color: #ecd28a; font-size: 13px; }
+    .permission-text { transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease; }
+    .permission-long { color: #117a54 !important; }
+    .permission-short { color: #b22f3b !important; }
+    .permission-wait { color: #8b6518 !important; }
+    .permission-neutral { color: #d09a18 !important; }
+    .permission-danger { color: #8f2451 !important; }
+    .permission-muted { color: #777066 !important; }
+    .permission-badge {
+      border-color: rgba(139, 101, 24, 0.38) !important;
+      background: rgba(255, 246, 220, 0.1);
+    }
+    .permission-badge.permission-long {
+      border-color: rgba(17, 122, 84, 0.46) !important;
+      background: rgba(24, 115, 88, 0.16);
+    }
+    .permission-badge.permission-short {
+      border-color: rgba(178, 47, 59, 0.5) !important;
+      background: rgba(178, 47, 59, 0.14);
+    }
+    .permission-badge.permission-danger {
+      border-color: rgba(143, 36, 81, 0.5) !important;
+      background: rgba(143, 36, 81, 0.16);
+    }
+    .permission-badge.permission-muted {
+      border-color: rgba(119, 112, 102, 0.45) !important;
+      background: rgba(119, 112, 102, 0.1);
+    }
+    .permission-alert {
+      position: fixed;
+      z-index: 29;
+      left: 50%;
+      bottom: 78px;
+      display: none;
+      width: min(560px, calc(100% - 32px));
+      transform: translateX(-50%);
+      border: 1px solid rgba(139, 101, 24, 0.4);
+      border-radius: 6px;
+      background: #fffefa;
+      box-shadow: 0 18px 44px rgba(18, 19, 17, 0.22);
+      overflow: hidden;
+    }
+    .permission-alert.show { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 12px 14px; }
+    .permission-alert-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #c9a03a;
+      box-shadow: 0 0 0 6px rgba(201, 160, 58, 0.16);
+      animation: permissionPulse 1.5s ease-in-out infinite;
+    }
+    .permission-alert-title { display: block; font-size: 15px; font-weight: 850; line-height: 1.25; }
+    .permission-alert-detail { display: block; margin-top: 3px; color: #5d594e; font-size: 12px; line-height: 1.45; }
+    .permission-alert button {
+      min-height: 30px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--black);
+      color: #f1d27e;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .permission-alert.permission-long { border-color: rgba(17, 122, 84, 0.5); background: #f2fbf6; }
+    .permission-alert.permission-short { border-color: rgba(178, 47, 59, 0.5); background: #fff4f4; }
+    .permission-alert.permission-danger { border-color: rgba(143, 36, 81, 0.55); background: #fff2f7; }
+    .permission-alert.permission-muted { border-color: rgba(119, 112, 102, 0.45); background: #f7f5ee; }
+    .permission-alert.permission-long .permission-alert-dot { background: #117a54; box-shadow: 0 0 0 6px rgba(17, 122, 84, 0.15); }
+    .permission-alert.permission-short .permission-alert-dot { background: #b22f3b; box-shadow: 0 0 0 6px rgba(178, 47, 59, 0.14); }
+    .permission-alert.permission-danger .permission-alert-dot { background: #8f2451; box-shadow: 0 0 0 6px rgba(143, 36, 81, 0.16); }
+    @keyframes permissionPulse {
+      0%, 100% { transform: scale(1); opacity: 0.78; }
+      50% { transform: scale(1.22); opacity: 1; }
+    }
+    .execution-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+    .execution-cell span { display: block; color: #aaa69a; font-size: 12px; }
+    .execution-cell strong { display: block; margin-top: 3px; color: #fffefa; font-size: 16px; font-variant-numeric: tabular-nums; }
+    .cockpit-risk { display: grid; gap: 7px; }
+    .cockpit-risk div { display: flex; justify-content: space-between; gap: 12px; color: #c5c0b3; font-size: 13px; }
+    .cockpit-risk strong { color: #fffefa; font-variant-numeric: tabular-nums; }
+    .cockpit-conclusion { grid-column: 1 / -1; padding: 11px 20px; border-top: 1px solid #39382f; color: #f2dfaa; font-size: 14px; }
+
+    .summary-band { margin-top: 0; margin-bottom: 14px; padding: 16px 20px !important; border-left: 3px solid var(--gold); background: rgba(255, 254, 250, 0.96); box-shadow: none; }
+    .summary-grid { gap: 0; margin-top: 10px; border-top: 1px solid var(--border); }
+    .summary-item { padding: 12px 18px 0 0; border: 0; border-radius: 0; background: transparent; }
+    .summary-item strong { font-size: 15px; line-height: 1.65; font-weight: 560; }
+
+    .dashboard { grid-template-columns: minmax(720px, 1fr) 370px; gap: 14px; }
+    .chart-panel { min-height: 760px; box-shadow: 0 14px 42px rgba(29, 27, 20, 0.065); }
+    .tv-chart { min-height: 680px; }
+    .panel-head { padding: 14px 18px; background: var(--panel); }
+    .side { gap: 12px; }
+
+    .meeting-card, .scenario, .risk-card, .report-line, .summary-item, .event-item {
+      border-radius: 4px;
+      box-shadow: none;
+    }
+    .scenario p, .risk-card p, .note, .report-line strong { color: #3f403a; font-size: 15px; line-height: 1.68; }
+    .permission-row span, .symbol-row span { font-size: 14px; }
+    .permission-row strong, .symbol-row strong { font-size: 15px; }
+
+    .strategy-grid { gap: 14px; }
+    .risk-grid { gap: 8px; }
+    .risk-card { background: #fffefa; }
+    .scenario { background: #fffefa; }
+
+    .table-wrap { border-radius: 4px; background: var(--panel); }
+    table { font-size: 14px; line-height: 1.55; }
+    th, td { padding: 13px 14px; }
+    th { position: sticky; top: 0; z-index: 3; background: var(--black); }
+    tbody tr:nth-child(even) td { background: #faf8f2; }
+    tbody tr:hover td { background: #f5edda; }
+    th:first-child, td:first-child { position: sticky; left: 0; z-index: 2; }
+    td:first-child { background: var(--panel); font-weight: 750; }
+    tbody tr:nth-child(even) td:first-child { background: #faf8f2; }
+    th:first-child { z-index: 4; }
+    .matrix-input, .matrix-select { font-size: 14px; font-variant-numeric: tabular-nums; font-weight: 650; }
+
+    .multi-chart-grid { gap: 10px; }
+    .tf-chart { border-radius: 4px; background: var(--panel); }
+    .tf-chart-head { background: var(--panel); padding: 12px 14px; }
+    .tf-chart-head strong { font-size: 16px; }
+    .tf-chart-head span { font-size: 13px; }
+
+    .source-link { color: var(--gold-dark); }
+    .fixed-execution {
+      position: fixed;
+      z-index: 20;
+      right: 82px;
+      bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      max-width: calc(100% - 36px);
+      padding: 10px 14px;
+      border: 1px solid #302d23;
+      border-radius: 4px;
+      background: rgba(16, 17, 15, 0.96);
+      color: #fffefa;
+      box-shadow: 0 12px 30px rgba(18, 19, 17, 0.22);
+      font-size: 13px;
+    }
+    .fixed-execution strong { color: #d7b865; }
+
+    .chat-launcher {
+      position: fixed;
+      z-index: 31;
+      right: 18px;
+      bottom: 18px;
+      width: 48px;
+      height: 48px;
+      border: 1px solid #4a402a;
+      border-radius: 50%;
+      background: var(--black);
+      color: #d7b865;
+      font: 800 16px/1 inherit;
+      cursor: pointer;
+      box-shadow: 0 12px 28px rgba(18, 19, 17, 0.24);
+    }
+
+    .chat-panel {
+      position: fixed;
+      z-index: 30;
+      right: 18px;
+      bottom: 78px;
+      display: none;
+      width: min(390px, calc(100% - 36px));
+      height: min(570px, calc(100vh - 110px));
+      border: 1px solid #302d23;
+      border-radius: 6px;
+      background: var(--panel);
+      box-shadow: 0 20px 50px rgba(18, 19, 17, 0.22);
+      overflow: hidden;
+    }
+
+    .chat-panel.open { display: grid; grid-template-rows: auto 1fr auto auto; }
+    .chat-head { display: flex; justify-content: space-between; gap: 14px; padding: 14px 16px; background: linear-gradient(135deg, #10110f, #1d1a13); color: #fffefa; }
+    .chat-head strong { display: block; font-size: 16px; }
+    .chat-head span { display: block; margin-top: 2px; color: #bdb8aa; font-size: 12px; }
+    .chat-actions { display: flex; align-items: center; gap: 4px; }
+    .chat-reset,
+    .chat-close { border: 0; background: transparent; color: #fffefa; font-size: 22px; cursor: pointer; }
+    .chat-reset { min-height: 30px; padding: 0 6px; color: #d8bd79; font-size: 12px; }
+    .chat-messages { display: grid; align-content: start; gap: 10px; overflow-y: auto; padding: 14px; background: #f5f1e6; }
+    .chat-message { max-width: 88%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 5px; background: var(--panel); color: #30312d; font-size: 14px; line-height: 1.55; }
+    .chat-message.user { justify-self: end; border-color: #c6a04a; background: #f4ecd8; }
+    .chat-message.connection-guide { max-width: 100%; border-color: #c6a04a; background: #fbf2d9; }
+    .chat-message.connection-guide strong { display: block; margin-bottom: 5px; color: var(--black); }
+    .chat-quick { display: flex; gap: 6px; overflow-x: auto; padding: 8px 10px; border-top: 1px solid var(--border); }
+    .chat-quick button { min-height: 32px; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); color: var(--text); white-space: nowrap; cursor: pointer; }
+    .chat-form { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 10px; border-top: 1px solid var(--border); background: var(--panel); }
+    .chat-form input { min-height: 42px; }
+    .chat-form button { min-width: 58px; border: 0; border-radius: 4px; background: var(--black); color: #ecd28a; font-weight: 750; cursor: pointer; }
+
+    .news-launcher {
+      position: fixed;
+      z-index: 31;
+      left: 18px;
+      bottom: 18px;
+      width: auto;
+      min-width: 96px;
+      height: 48px;
+      padding: 0 15px;
+      border: 1px solid #4a402a;
+      border-radius: 24px;
+      background: var(--black);
+      color: #d7b865;
+      font: 800 16px/1 inherit;
+      cursor: pointer;
+      box-shadow: 0 12px 28px rgba(18, 19, 17, 0.24);
+    }
+
+    .news-panel {
+      position: fixed;
+      z-index: 30;
+      left: 18px;
+      bottom: 78px;
+      display: none;
+      width: min(440px, calc(100% - 36px));
+      height: min(650px, calc(100vh - 110px));
+      border: 1px solid #302d23;
+      border-radius: 6px;
+      background: var(--panel);
+      box-shadow: 0 20px 50px rgba(18, 19, 17, 0.22);
+      overflow: hidden;
+    }
+
+    .news-panel.open { display: grid; grid-template-rows: auto auto 1fr auto; }
+    .news-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; background: linear-gradient(135deg, #10110f, #1d1a13); color: #fffefa; }
+    .news-head strong { display: block; font-size: 16px; }
+    .news-head span { display: block; margin-top: 2px; color: #bdb8aa; font-size: 12px; }
+    .news-close { border: 0; background: transparent; color: #fffefa; font-size: 22px; cursor: pointer; }
+    .news-status { padding: 10px 14px; border-bottom: 1px solid var(--border); background: #fbf2d9; color: #55431d; font-size: 12px; line-height: 1.5; }
+    .news-list { display: grid; align-content: start; gap: 9px; padding: 12px; overflow-y: auto; background: #f5f1e6; }
+    .news-item { padding: 10px; border: 1px solid var(--border); border-radius: 5px; background: var(--panel); }
+    .news-item-meta { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 11px; }
+    .news-item-title { display: block; margin-top: 6px; color: var(--black); font-size: 13px; line-height: 1.5; text-decoration: none; font-weight: 750; }
+    .news-item-analysis { margin: 6px 0 0; color: #56564e; font-size: 12px; line-height: 1.5; }
+    .news-impact { color: var(--gold-dark); font-weight: 800; }
+    .news-impact.positive { color: var(--green); }
+    .news-impact.negative { color: var(--red); }
+    .news-view { padding: 11px 14px; border-top: 1px solid var(--border); background: #10110f; color: #f1dfad; font-size: 12px; line-height: 1.5; }
+    .news-preview { display: grid; gap: 8px; margin-top: 12px; }
+    .news-preview-item { padding: 9px 10px; border-left: 3px solid var(--gold); background: #f8f0dc; color: #46443c; font-size: 12px; line-height: 1.5; }
+    .news-preview-open { width: 100%; min-height: 38px; margin-top: 10px; border: 1px solid var(--gold-dark); border-radius: 4px; background: var(--black); color: #ecd28a; font-weight: 800; cursor: pointer; }
+    .btc-mini-panel {
+      margin: 0 18px 18px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel);
+      box-shadow: none;
+      overflow: hidden;
+    }
+    .btc-mini-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      background: linear-gradient(135deg, #10110f, #1d1a13);
+      color: #fffefa;
+      font-size: 12px;
+    }
+    .btc-mini-head strong { font-size: 14px; }
+    .btc-mini-head span { color: #d8bd79; }
+    .btc-mini-frame { width: 100%; height: 310px; border: 0; display: block; background: #fffdf7; }
+
+    @media (max-width: 980px) {
+      main { width: min(100% - 20px, 760px); }
+      .topbar { display: grid; }
+      .topbar-market { width: 100%; min-width: 0; justify-content: space-between; }
+      .header-quote { flex: 1; }
+      .decision-cockpit { grid-template-columns: 1fr; }
+      .cockpit-block { border-right: 0; border-bottom: 1px solid #39382f; }
+      .execution-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .dashboard { grid-template-columns: 1fr; }
+      .side { order: -1; }
+      .chart-panel { min-height: 660px; }
+      .tv-chart { min-height: 580px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .summary-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+      .summary-item:last-child { border-bottom: 0; }
+    }
+
+    @media (max-width: 560px) {
+      body { font-size: 15px; }
+      main { width: calc(100% - 16px); padding-top: 8px; }
+      .topbar { padding: 14px; }
+      .topbar-market { display: grid; gap: 10px; }
+      .header-quote { order: -1; padding: 10px 0 12px; border-left: 0; border-bottom: 1px solid #3c392f; text-align: left; }
+      .header-quote-price { font-size: 30px; }
+      .market-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .strip-card:nth-child(2) { border-right: 0; }
+      .strip-card:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
+      .strip-card strong { font-size: 17px; }
+      .cockpit-price { font-size: 32px; }
+      .execution-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cockpit-block { padding: 15px; }
+      .panel.pad { padding: 16px; }
+      h2 { font-size: 19px; }
+      .chart-panel { min-height: 620px; }
+      .fixed-execution { left: 8px; right: 8px; bottom: 8px; justify-content: space-between; gap: 8px; font-size: 12px; }
+      .fixed-execution span:nth-child(2) { display: none; }
+      .decision-cockpit { margin-bottom: 10px; }
+      .cockpit-conclusion { padding-bottom: 62px; }
+      .summary-band { padding: 14px 16px !important; }
+      .live-badge { width: 100%; justify-content: center; }
+      .chat-launcher { right: 12px; bottom: 62px; }
+      .chat-panel { right: 8px; bottom: 118px; width: calc(100% - 16px); height: min(560px, calc(100vh - 135px)); }
+      .news-launcher { left: 12px; bottom: 62px; min-width: 92px; }
+      .news-panel { left: 8px; bottom: 118px; width: calc(100% - 16px); height: min(620px, calc(100vh - 135px)); }
+      .btc-mini-panel { margin: 0 12px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="topbar" aria-label="页面标题">
+      <div class="brand">
+        <div class="mark" aria-hidden="true">Au</div>
+        <div>
+          <h1>黄金交易会议看板</h1>
+          <p class="subtitle">参考黄金会议策略：先判趋势强度，再等触发，最后按止损、止盈和仓位执行。</p>
+        </div>
+      </div>
+      <div class="topbar-market">
+        <div class="header-quote">
+          <span class="header-quote-label">TradingView｜OANDA:XAUUSD 实时报价</span>
+          <div class="tv-live-quote">
+            <div class="tradingview-widget-container">
+              <div class="tradingview-widget-container__widget"></div>
+              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+              {"symbol":"OANDA:XAUUSD","width":"100%","isTransparent":true,"colorTheme":"dark","locale":"zh_CN"}
+              </script>
+            </div>
+          </div>
+          <span class="header-quote-meta">TradingView 组件直接显示；网页脚本无法读取其数值。</span>
+        </div>
+        <div class="live-badge">
+          <span class="pulse" aria-hidden="true"></span>
+          行情源：OANDA:XAUUSD
+        </div>
+      </div>
+    </section>
+
+    <section class="market-strip" id="meeting-summary-strip" aria-label="交易摘要">
+      <div class="strip-card">
+        <span>Overall Sentiment</span>
+        <strong>Sell</strong>
+        <small>5m/15m/30m均走弱；1H至日线仍偏空，低位禁止追空。</small>
+      </div>
+      <div class="strip-card">
+        <span>当前价口径</span>
+        <strong id="livePriceTop">行情已连接</strong>
+        <small id="livePriceMeta">后台行情已接入，正在同步实时价格；TV组件价格仍需肉眼核对。</small>
+      </div>
+      <div class="strip-card">
+        <span>交易许可</span>
+        <strong id="stripPermission">偏空主导｜多空并用</strong>
+        <small id="stripPermissionMeta">最新截图价约4439-4440：低位不追空；等4458-4463承压空或4436-4424扫低收回小多。</small>
+      </div>
+      <div class="strip-card">
+        <span>宏观数据</span>
+        <strong>未来关键：CPI / PPI</strong>
+        <small>06/10 CPI、06/11 PPI；今天暂无美国高影响已公布数据，不用旧非农填充。</small>
+      </div>
+    </section>
+
+    <section class="decision-cockpit" id="meeting-decision-cockpit" aria-label="交易决策驾驶舱">
+      <div class="cockpit-block">
+        <span class="cockpit-label">TradingView｜OANDA:XAUUSD 当前价</span>
+        <div class="tv-cockpit-quote">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+            {"symbol":"OANDA:XAUUSD","width":"100%","isTransparent":true,"colorTheme":"dark","locale":"zh_CN"}
+            </script>
+          </div>
+        </div>
+        <span class="cockpit-status" id="permissionStage">交易许可：偏空主导｜低位不追空；等4458-4463承压空，或4436-4424扫低收回小多</span>
+      </div>
+      <div class="cockpit-block">
+        <span class="cockpit-label">优先执行方案｜确认后才交易</span>
+        <div class="execution-grid">
+          <div class="execution-cell"><span>主方向</span><strong>反抽承压空</strong></div>
+          <div class="execution-cell"><span>Entry</span><strong>4458-4463</strong></div>
+          <div class="execution-cell"><span>SL / 失效</span><strong>4472</strong></div>
+          <div class="execution-cell"><span>TP1</span><strong>4444</strong></div>
+          <div class="execution-cell"><span>TP2</span><strong>4436</strong></div>
+        </div>
+      </div>
+      <div class="cockpit-block">
+        <span class="cockpit-label">风险控制</span>
+        <div class="cockpit-risk">
+          <div><span>机会等级</span><strong>B / 待确认</strong></div>
+          <div><span>建议仓位</span><strong>0.01-0.03 手</strong></div>
+          <div><span>单笔风险</span><strong>30-45 美金</strong></div>
+          <div><span>策略分析状态</span><strong>待复核</strong></div>
+        </div>
+      </div>
+      <div class="cockpit-conclusion">最新会议结论（2026-06-05 11:52 MYT）：当前约4439-4440，短周期与高周期同步偏空，但价格已靠近4436-4424支撑带，不能低位追空。主计划等4458-4463承压空；强反抽看4470-4475扫高失败空；若4436-4424扫低收回，4432-4438只做0.01手快多。</div>
+    </section>
+
+    <section class="panel pad summary-band" id="meeting-analysis-summary" aria-label="会议分析总结">
+      <h2>会议分析总结｜先看这里</h2>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span>已确认事实</span>
+          <strong>最新截图覆盖5m、15m、30m、45m、1H、2H、4H与日线。5m/15m处于下跌通道，30m/45m破位走弱，1H/2H仍下行，4H/日线未见反转。</strong>
+        </div>
+        <div class="summary-item">
+          <span>尚未确认</span>
+          <strong>当前约4439-4440已处于低位，靠近4436-4424支撑带；趋势偏空但不能追空。多头不是主趋势，只能等扫低收回后做短线修复。</strong>
+        </div>
+        <div class="summary-item">
+          <span>执行想法</span>
+          <strong>不在4439附近追空。第一空点4458-4463，强反抽空点4470-4475；多头只看4436-4424扫低收回后的4432-4438小多。跌破4424并回踩失败才看延续空。</strong>
+        </div>
+      </div>
+      <p class="footer-note">数据口径：用户最新 TradingView 多周期截图，2026-06-05 11:52 MYT。网页查看时间：<strong id="reportTime">--</strong>。截图之后价格与结构可能变化，执行前仍需查看实时图表确认。</p>
+      <a class="section-jump" href="#main-force-matrix">查看主力入场与派发矩阵 ↓</a>
+    </section>
+
+    <section class="dashboard">
+      <article class="panel chart-panel">
+        <div class="panel-head">
+          <h2>XAU/USD 主观察 K 线</h2>
+          <div class="source">默认 15m；执行建议必须参考下方 5m/15m/30m/45m/1H/4H 多周期图</div>
+        </div>
+        <div class="tv-chart">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+            {
+              "autosize": false,
+              "width": "100%",
+              "height": 560,
+              "symbol": "OANDA:XAUUSD",
+              "interval": "15",
+              "timezone": "Asia/Kuala_Lumpur",
+              "theme": "light",
+              "style": "1",
+              "locale": "zh_CN",
+              "backgroundColor": "#fffdf7",
+              "gridColor": "rgba(185, 135, 34, 0.12)",
+              "hide_side_toolbar": false,
+              "hide_top_toolbar": false,
+              "allow_symbol_change": true,
+              "calendar": false,
+              "details": true,
+              "hide_volume": true,
+              "save_image": true,
+              "withdateranges": true,
+              "studies": [
+                "STD;SMA",
+                "STD;EMA",
+                "STD;RSI",
+                "STD;MACD"
+              ],
+              "support_host": "https://www.tradingview.com"
+            }
+            </script>
+          </div>
+        </div>
+        <section class="btc-mini-panel" aria-label="BTC 4小时参考图">
+          <div class="btc-mini-head">
+            <strong>BTCUSDT 4H 风险偏好参考</strong>
+            <span>MA / EMA / RSI / MACD</span>
+          </div>
+          <iframe class="btc-mini-frame" title="BTCUSDT 4H chart with MA EMA RSI MACD" loading="lazy" src="https://www.tradingview.com/widgetembed/?symbol=BINANCE%3ABTCUSDT&interval=240&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=fff8e7&studies=%5B%22MASimple%40tv-basicstudies%22%2C%22MAExp%40tv-basicstudies%22%2C%22RSI%40tv-basicstudies%22%2C%22MACD%40tv-basicstudies%22%5D&theme=light&style=1&timezone=Asia%2FKuala_Lumpur&withdateranges=1"></iframe>
+        </section>
+      </article>
+
+      <aside class="side">
+        <section class="panel pad" id="meeting-key-trade-card">
+          <h2>最关键交易卡</h2>
+          <div class="permission-list" style="margin-top: 12px;">
+            <div class="permission-row"><span>当前许可</span><strong>偏空主导，低位不追空</strong></div>
+            <div class="permission-row"><span>动态状态</span><strong id="dynamicPermission">实时追踪中</strong></div>
+            <div class="permission-row"><span>精准多区</span><strong>4432-4438｜扫低收回后小多</strong></div>
+            <div class="permission-row"><span>精准空区</span><strong>4458-4463｜承压确认后空</strong></div>
+            <div class="permission-row"><span>破位方案</span><strong>跌破 4424，回踩失败再空</strong></div>
+            <div class="permission-row"><span>强反抽空</span><strong>4470-4475 扫高失败；上方4483-4486重评估</strong></div>
+          </div>
+        </section>
+
+        <section class="panel pad" id="meeting-macro-data">
+          <h2>宏观数据日历｜未来关键窗口</h2>
+          <div class="event-list">
+            <div class="event-item">
+              <span class="event-time">06/10 20:30</span>
+              <span class="event-name">美国 CPI / 实际收入：通胀高于预期通常利空黄金，低于预期通常利多黄金；公布前不提前赌方向</span>
+              <span class="event-impact mixed">高影响</span>
+            </div>
+            <div class="event-item">
+              <span class="event-time">06/11 20:30</span>
+              <span class="event-name">美国 PPI：生产端通胀高于预期通常利空黄金，低于预期通常利多黄金；需结合美元与美债收益率反应</span>
+              <span class="event-impact mixed">高影响</span>
+            </div>
+            <div class="event-item">
+              <span class="event-time">06/12 22:00</span>
+              <span class="event-name">美国雇主成本相关数据：影响低于 CPI/PPI，除非明显偏离预期，否则不单独改变交易方向</span>
+              <span class="event-impact mixed">观察</span>
+            </div>
+          </div>
+          <p class="footer-note"><strong>数据口径：</strong>BLS 2026年6月官方发布日程；今天是 06月07日，暂无已公布的美国高影响数据。网页不再展示过期非农作为“今日数据”。公布前30分钟降低仓位或停止普通新单，公布后等5m/15m结构确认。</p>
+        </section>
+
+        <section class="panel pad" id="meeting-news-preview">
+          <h2>即时新闻研判｜24小时滚动</h2>
+          <div class="news-preview" id="newsPreview">
+            <div class="news-preview-item">正在载入今日新闻与数据...</div>
+          </div>
+          <button class="news-preview-open" id="newsPreviewOpen" type="button">打开即时新闻研判</button>
+        </section>
+
+      </aside>
+    </section>
+
+    <section class="strategy-grid" id="meeting-strategy-grid" aria-label="黄金会议策略">
+      <article class="panel pad" id="meeting-scenarios">
+        <h2>三大剧本</h2>
+          <div class="scenarios" style="margin-top: 12px;">
+          <div class="scenario">
+            <div class="scenario-head"><h3>顺势反抽空剧本</h3><span class="tag green">优先</span></div>
+            <p><strong>触发：</strong>反弹 `4458-4463` 后，5m/15m 出现承压、回踩失败、扫高失败或MA/EMA动能转弱。<br><strong>Entry：</strong>`4458-4463`｜<strong>SL：</strong>`4472`｜<strong>TP：</strong>`4444 / 4436 / 4425`｜<strong>R:R：</strong>约1.2-2.8。建议 B 级 `0.01-0.03` 手；到 TP1 减仓并推保本。</p>
+          </div>
+          <div class="scenario">
+            <div class="scenario-head"><h3>强反抽扫高空剧本</h3><span class="tag">确认后</span></div>
+            <p><strong>触发：</strong>冲到 `4470-4475` 后不能站稳，出现假突破、扫高失败或15m重新跌回区间。<br><strong>Entry：</strong>`4470-4475`｜<strong>SL：</strong>`4486`｜<strong>TP：</strong>`4458 / 4444 / 4436`｜<strong>R:R：</strong>约1.0-2.7。建议 B 级 `0.01-0.03` 手；若15m收稳4486上方，空头方案取消。</p>
+          </div>
+          <div class="scenario">
+            <div class="scenario-head"><h3>逆势短线剧本</h3><span class="tag red">小仓快进快出</span></div>
+            <p><strong>触发：</strong>`4436-4424` 区域出现扫低收回，5m重新站上 `4444` 并回踩不破。<br><strong>Entry：</strong>`4432-4438` 确认后｜<strong>SL：</strong>`4420`｜<strong>TP：</strong>`4448 / 4456 / 4465`｜<strong>R:R：</strong>约1.0-2.8。逆势反弹，仅 `0.01` 手；没有扫低收回不做。</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel pad" id="meeting-forbidden-trades">
+        <h2>禁止交易</h2>
+        <div class="risk-grid" style="margin-top: 12px;">
+          <div class="risk-card"><h3>低位不追空</h3><p>当前约4439-4440，靠近4436-4424支撑带；趋势虽偏空，但这里直接追空容易卖在短线低位。</p></div>
+          <div class="risk-card"><h3>空单必须等反抽</h3><p>第一空点收窄到4458-4463；没有5m/15m承压或MA/EMA动能转弱，不提前挂空。</p></div>
+          <div class="risk-card"><h3>非农前后降仓</h3><p>20:30 MYT非农公布前30分钟不做普通新单；公布后等第一波波动结束再按技术位执行。</p></div>
+          <div class="risk-card"><h3>低位多必须扫低收回</h3><p>4436-4424只有出现扫低收回才考虑4432-4438的0.01手小多；若跌破4424并回踩失败，多头取消。</p></div>
+        </div>
+      </article>
+
+      <article class="panel pad" id="meeting-position-management">
+        <h2>仓位管理</h2>
+        <div class="notes" style="margin-top: 12px;">
+          <p class="note"><strong>TP1</strong>减仓 30%-50%，剩余仓位推到保本，防止盈利单变亏损。</p>
+          <p class="note"><strong>TP2</strong>再次减仓；如果结构仍有效，留小仓位看 TP3。</p>
+          <p class="note"><strong>Trailing Stop</strong>用最近结构低点/高点移动止损，不用情绪提前平掉趋势单。</p>
+          <p class="note"><strong>Must Exit</strong>价格回到入场后失去结构，或打破原失效位，剩余仓位退出。</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel pad" style="margin-top: 16px;">
+      <h2>网页多周期图表证据</h2>
+      <div class="multi-chart-grid">
+        <article class="tf-chart">
+          <div class="tf-chart-head"><strong>5m 入场触发</strong><span>MA + EMA 交叉｜精确入场</span></div>
+          <iframe class="tf-frame" title="XAUUSD 5m with MA and EMA" loading="lazy" src="https://www.tradingview.com/widgetembed/?symbol=OANDA%3AXAUUSD&interval=5&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=fff8e7&studies=%5B%22MASimple%40tv-basicstudies%22%2C%22MAExp%40tv-basicstudies%22%5D&theme=light&style=1&timezone=Asia%2FKuala_Lumpur&withdateranges=1"></iframe>
+        </article>
+        <article class="tf-chart">
+          <div class="tf-chart-head"><strong>15m 触发确认</strong><span>MA + EMA 交叉｜真假突破</span></div>
+          <iframe class="tf-frame" title="XAUUSD 15m with MA and EMA" loading="lazy" src="https://www.tradingview.com/widgetembed/?symbol=OANDA%3AXAUUSD&interval=15&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=fff8e7&studies=%5B%22MASimple%40tv-basicstudies%22%2C%22MAExp%40tv-basicstudies%22%5D&theme=light&style=1&timezone=Asia%2FKuala_Lumpur&withdateranges=1"></iframe>
+        </article>
+        <article class="tf-chart">
+          <div class="tf-chart-head"><strong>30m 区间结构</strong><span>MA + EMA 交叉｜区间动能</span></div>
+          <iframe class="tf-frame" title="XAUUSD 30m with MA and EMA" loading="lazy" src="https://www.tradingview.com/widgetembed/?symbol=OANDA%3AXAUUSD&interval=30&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=fff8e7&studies=%5B%22MASimple%40tv-basicstudies%22%2C%22MAExp%40tv-basicstudies%22%5D&theme=light&style=1&timezone=Asia%2FKuala_Lumpur&withdateranges=1"></iframe>
+        </article>
+        <article class="tf-chart">
+          <div class="tf-chart-head"><strong>45m 节奏过滤</strong><span>MA + EMA 交叉｜过滤噪音</span></div>
+          <iframe class="tf-frame" title="XAUUSD 45m with MA and EMA" loading="lazy" src="https://www.tradingview.com/widgetembed/?symbol=OANDA%3AXAUUSD&interval=45&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=fff8e7&studies=%5B%22MASimple%40tv-basicstudies%22%2C%22MAExp%40tv-basicstudies%22%5D&theme=light&style=1&timezone=Asia%2FKuala_Lumpur&withdateranges=1"></iframe>
+        </article>
+        <article class="tf-chart">
+          <div class="tf-chart-head"><strong>1H 日内主结构</strong><span>MA + EMA 交叉｜方向过滤</span></div>
+          <iframe class="tf-frame" title="XAUUSD 1H with MA and EMA" loading="lazy" src="https://www.tradingview.com/widgetembed/?symbol=OANDA%3AXAUUSD&interval=60&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=fff8e7&studies=%5B%22MASimple%40tv-basicstudies%22%2C%22MAExp%40tv-basicstudies%22%5D&theme=light&style=1&timezone=Asia%2FKuala_Lumpur&withdateranges=1"></iframe>
+        </article>
+        <article class="tf-chart">
+          <div class="tf-chart-head"><strong>4H 主方向</strong><span>MA + EMA 交叉｜高周期背景</span></div>
+          <iframe class="tf-frame" title="XAUUSD 4H with MA and EMA" loading="lazy" src="https://www.tradingview.com/widgetembed/?symbol=OANDA%3AXAUUSD&interval=240&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=fff8e7&studies=%5B%22MASimple%40tv-basicstudies%22%2C%22MAExp%40tv-basicstudies%22%5D&theme=light&style=1&timezone=Asia%2FKuala_Lumpur&withdateranges=1"></iframe>
+        </article>
+      </div>
+      <p class="footer-note">这些图表来自网页内 TradingView 公开组件，均已加入公开 MA 与 EMA；交叉仅用于确认动能，不能单独触发交易。它们不会自动带入你账号里的私人指标。执行建议应以 4H 定方向、1H 定结构、45m/30m 定区间、15m/5m 找触发。</p>
+    </section>
+
+    <section class="panel pad" id="main-force-matrix" style="margin-top: 16px;">
+      <h2>主力入场与派发矩阵｜多周期严查</h2>
+      <p class="footer-note" id="matrixVersionNote">本表依据 2026-06-05 11:52 MYT 截图。若Chrome TradingView当前价明显跌出本策略框架，本矩阵自动视为过期，需要新截图/新会议重算。这里的“主力”仅代表可见流动性与供需行为假设；价格进入候选区后，仍必须出现确认。</p>
+      <div class="table-wrap" style="margin-top: 12px;">
+        <table>
+          <thead>
+            <tr>
+              <th>阶段/周期</th>
+              <th>多空情绪</th>
+              <th>主力可能入场区</th>
+              <th>主力可能派发区</th>
+              <th>扫流动性位置</th>
+              <th>用户观察点</th>
+              <th>失效位</th>
+              <th>置信度</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>5m 超短线</td>
+              <td>Sell｜低位下跌通道</td>
+              <td>4432-4438 扫低收回才小多</td>
+              <td>4458-4463；上方4470-4475</td>
+              <td>4424下方；4465/4475上方</td>
+              <td>当前不追空；4458-4463承压空，扫低收回才小多</td>
+              <td>空头：5m收稳4472上方｜多头：跌破4420</td>
+              <td>B｜下跌通道内低位</td>
+            </tr>
+            <tr>
+              <td>15m 短线</td>
+              <td>Sell</td>
+              <td>4424-4436 支撑带</td>
+              <td>4458-4463；4483-4486</td>
+              <td>4424下方；4465上方</td>
+              <td>4458-4463承压空；跌破4424回踩失败延续</td>
+              <td>15m收稳4472上方</td>
+              <td>B+｜空头结构清晰</td>
+            </tr>
+            <tr>
+              <td>30m 日内</td>
+              <td>Sell</td>
+              <td>4424附近；下方4405/4380</td>
+              <td>4458-4463；4470-4475</td>
+              <td>4424下方；4475上方</td>
+              <td>反弹量价滞涨或30m重新收弱</td>
+              <td>30m收稳4486上方</td>
+              <td>B｜破位走弱</td>
+            </tr>
+            <tr>
+              <td>45m 日内过滤</td>
+              <td>Sell</td>
+              <td>4424；下方4366</td>
+              <td>4460-4475</td>
+              <td>4424下方；4475上方</td>
+              <td>回踩4460附近失败，或跌破4424后回踩失败</td>
+              <td>45m收稳4486上方</td>
+              <td>B｜下降节奏有效</td>
+            </tr>
+            <tr>
+              <td>1h 主结构</td>
+              <td>Sell</td>
+              <td>4424/4366</td>
+              <td>4458-4463；4485-4486</td>
+              <td>4424/4366下方；4486上方</td>
+              <td>1H lower high，或跌破4424回踩失败</td>
+              <td>1H收稳4486上方</td>
+              <td>B｜高周期仍偏空</td>
+            </tr>
+            <tr>
+              <td>4h 波段</td>
+              <td>Sell</td>
+              <td>4424；下方4366</td>
+              <td>4450-4486；强压力4583</td>
+              <td>4424/4366下方；4583上方</td>
+              <td>4H未反转，低位只观察扫低，不追空</td>
+              <td>4H 收稳4583上方</td>
+              <td>B｜高周期偏空</td>
+            </tr>
+            <tr>
+              <td>Daily 大周期</td>
+              <td>Sell</td>
+              <td>4163旧支撑带</td>
+              <td>4773；5281旧压力</td>
+              <td>4435下方；4163下方</td>
+              <td>日线仍回落，不能凭低位猜底</td>
+              <td>日线重新收回4773上方</td>
+              <td>B-｜大周期未转多</td>
+            </tr>
+            <tr>
+              <td>Weekly 趋势背景</td>
+              <td>缺图，不能确认</td>
+              <td>缺图，不能确认</td>
+              <td>缺图，不能确认</td>
+              <td>缺图，不能确认</td>
+              <td>需要最新周线截图后重新分析</td>
+              <td>缺图，不能确认</td>
+              <td>C｜禁止推断</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="footer-note">执行顺序：4H/1H 定方向，45m/30m 定区间，15m/5m 找触发。没有可见确认，就不把候选压力区描述成已经发生的主力派发。</p>
+    </section>
+
+  </main>
+
+  <div class="fixed-execution" aria-label="固定执行提示">
+    <span>交易许可：<strong id="fixedPermission">偏空主导｜低位不追空</strong></span>
+    <span>优先观察：<strong>4458-4463空 / 4432-4438多</strong></span>
+    <span>第一空头失效：<strong>4472</strong></span>
+  </div>
+
+  <div class="permission-alert" id="permissionAlert" role="status" aria-live="polite">
+    <span class="permission-alert-dot" aria-hidden="true"></span>
+    <span>
+      <strong class="permission-alert-title" id="permissionAlertTitle">行情已连接</strong>
+      <span class="permission-alert-detail" id="permissionAlertDetail">价格进入关键区间时会提示。</span>
+    </span>
+    <button id="notifyPermissionButton" type="button">通知</button>
+  </div>
+
+  <button class="news-launcher" id="newsLauncher" type="button" aria-label="打开即时新闻研判">即时新闻</button>
+  <aside class="news-panel" id="newsPanel" aria-label="即时新闻与数据研判">
+    <div class="news-head">
+      <div><strong>即时新闻与数据研判</strong><span id="newsUpdatedAt">正在连接新闻源...</span></div>
+      <button class="news-close" id="newsClose" type="button" aria-label="关闭新闻研判">×</button>
+    </div>
+    <div class="news-status" id="newsStatus">正在核实金十授权状态与官方新闻源。</div>
+    <div class="news-list" id="newsList"></div>
+    <div class="news-view" id="newsMeetingView">等待新闻研判。</div>
+  </aside>
+
+  <button class="chat-launcher" id="chatLauncher" type="button" aria-label="打开会议对话">问</button>
+  <aside class="chat-panel" id="chatPanel" aria-label="网页会议对话">
+    <div class="chat-head">
+      <div><strong>黄金会议助手</strong><span id="chatConnection">正在启动本地推理分析...</span></div>
+      <div class="chat-actions">
+        <button class="chat-reset" id="chatReset" type="button" aria-label="清空对话">清空</button>
+        <button class="chat-close" id="chatClose" type="button" aria-label="关闭对话">×</button>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-message">直接问你现在最关心的问题。本地推理助手会识别问题中的方向与价格，再结合会议总结、交易许可、三大剧本、主力矩阵、宏观数据和风险规则回答；无需 API，无法核实的数据会明确说明。</div>
+    </div>
+    <div class="chat-quick">
+      <button type="button" data-question="现在能做吗">现在能做吗</button>
+      <button type="button" data-question="为什么不能交易">为什么不能交易</button>
+      <button type="button" data-question="止损和仓位">止损和仓位</button>
+      <button type="button" data-question="宏观数据影响">宏观数据影响</button>
+    </div>
+    <form class="chat-form" id="chatForm">
+      <input id="chatInput" autocomplete="off" placeholder="例如：4460能不能空？4430能不能做多？" aria-label="会议问题">
+      <button type="submit">发送</button>
+    </form>
+  </aside>
+
+  <script>
+    const reportTime = document.getElementById("reportTime");
+    function updateTime() {
+      reportTime.textContent = new Date().toLocaleString("zh-CN", {
+        timeZone: "Asia/Kuala_Lumpur",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      }) + " MYT";
+    }
+
+    function markOverdueEconomicData() {
+      const now = Date.now();
+      document.querySelectorAll("[data-release-at]").forEach((item) => {
+        const releaseAt = Date.parse(item.dataset.releaseAt);
+        const status = item.querySelector("[data-release-status]");
+        if (status && Number.isFinite(releaseAt) && now >= releaseAt) {
+          status.textContent = "已到点，需核实";
+          status.classList.add("overdue");
+        }
+      });
+    }
+
+    const tradePlan = {
+      shortEntry: [4458, 4463],
+      shortInvalid: 4472,
+      sweepShort: [4470, 4475],
+      sweepShortInvalid: 4486,
+      longEntry: [4432, 4438],
+      longTriggerBase: [4424, 4436],
+      longInvalid: 4420,
+      breakdown: 4424
+    };
+
+    function formatPrice(value) {
+      return Number(value).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function buildPermissionState(price) {
+      if (!Number.isFinite(price)) {
+        return {
+          key: "no-price",
+          label: "行情已连接",
+          detail: "后台行情已接入，正在等待实时价格返回；动态许可稍后自动切换。",
+          fixed: "实时追踪中",
+          action: "等待价格返回",
+          tone: "neutral"
+        };
+      }
+      if (price >= tradePlan.sweepShortInvalid) {
+        return {
+          key: "short-invalid",
+          label: "空头失效｜重新评估",
+          detail: `现价 ${formatPrice(price)} 已到4486上方，原空头剧本暂停；等待新截图或15m重新跌回压力下方。`,
+          fixed: "空头失效重评估",
+          action: "禁止硬空",
+          tone: "danger"
+        };
+      }
+      if (price >= tradePlan.sweepShort[0] && price <= tradePlan.sweepShort[1]) {
+        return {
+          key: "sweep-short",
+          label: "强反抽空观察",
+          detail: `现价 ${formatPrice(price)} 进入4470-4475强反抽区；只做扫高失败/假突破回落，SL 4486。`,
+          fixed: "强反抽空观察",
+          action: "等扫高失败",
+          tone: "short"
+        };
+      }
+      if (price >= tradePlan.shortInvalid) {
+        return {
+          key: "short-paused",
+          label: "第一空单暂停",
+          detail: `现价 ${formatPrice(price)} 已越过4472，4458-4463第一空单失效；等4470-4475或4483-4486反应。`,
+          fixed: "第一空单暂停",
+          action: "等待二次压力",
+          tone: "danger"
+        };
+      }
+      if (price >= tradePlan.shortEntry[0] && price <= tradePlan.shortEntry[1]) {
+        return {
+          key: "short-ready",
+          label: "可以准备做空",
+          detail: `现价 ${formatPrice(price)} 进入4458-4463精准空区；必须等5m/15m承压、MA/EMA转弱或回踩失败，SL 4472，TP 4444/4436/4425。`,
+          fixed: "准备空｜等确认",
+          action: "等承压确认",
+          tone: "short"
+        };
+      }
+      if (price >= 4448 && price < tradePlan.shortEntry[0]) {
+        return {
+          key: "middle-wait",
+          label: "中段等待",
+          detail: `现价 ${formatPrice(price)} 处在4448-4458中轴；追空太低，追多太晚，等4458-4463或4436-4424。`,
+          fixed: "中段等待",
+          action: "不追单",
+          tone: "neutral"
+        };
+      }
+      if (price >= 4439 && price < 4448) {
+        return {
+          key: "low-wait",
+          label: "低位不追空",
+          detail: `现价 ${formatPrice(price)} 靠近4436-4424支撑带；偏空主导，但空单等反弹，多单等扫低收回。`,
+          fixed: "低位不追空",
+          action: "等待触发",
+          tone: "wait"
+        };
+      }
+      if (price >= tradePlan.longEntry[0] && price <= tradePlan.longEntry[1]) {
+        return {
+          key: "long-ready",
+          label: "可以准备小多",
+          detail: `现价 ${formatPrice(price)} 进入4432-4438小多区；必须先看到4436-4424扫低收回并站回4444，SL 4420，只能0.01手。`,
+          fixed: "准备多｜小仓",
+          action: "等扫低收回",
+          tone: "long"
+        };
+      }
+      if (price >= tradePlan.breakdown && price < tradePlan.longEntry[0]) {
+        return {
+          key: "sweep-low",
+          label: "扫低观察",
+          detail: `现价 ${formatPrice(price)} 进入4424-4432扫流动性区；不猜底，收回4436/4444才小多，跌破4424回踩失败再空。`,
+          fixed: "扫低观察",
+          action: "等收回或回踩失败",
+          tone: "wait"
+        };
+      }
+      if (price < tradePlan.breakdown) {
+        const reboundLow = Math.round((price + 18) / 5) * 5;
+        const reboundHigh = reboundLow + 12;
+        const scalpLow = Math.floor((price - 18) / 10) * 10;
+        const scalpHigh = scalpLow + 12;
+        return {
+          key: "live-reassessment",
+          label: "实时重估｜偏空延续",
+          detail: `现价 ${formatPrice(price)} 已跌出旧矩阵，当前按实时重估处理：主趋势偏空但禁止低位追空；先等 ${reboundLow}-${reboundHigh} 反抽失败再看空，或等 ${scalpLow}-${scalpHigh} 止跌收回才考虑0.01手快多。旧矩阵仅作历史记录。`,
+          fixed: "实时重估｜不追空",
+          action: "等反抽/止跌确认",
+          tone: "danger",
+          liveRebound: [reboundLow, reboundHigh],
+          liveScalp: [scalpLow, scalpHigh]
+        };
+      }
+      return {
+        key: "watch",
+        label: "观察",
+        detail: `现价 ${formatPrice(price)} 不在核心交易触发位，等待价格进入计划区。`,
+        fixed: "等待计划区",
+        action: "观察",
+        tone: "neutral"
+      };
+    }
+
+    function applyPermissionTone(tone) {
+      const classNames = ["permission-long", "permission-short", "permission-wait", "permission-neutral", "permission-danger", "permission-muted"];
+      const toneClass = `permission-${tone || "wait"}`;
+      [
+        document.getElementById("stripPermission"),
+        document.getElementById("dynamicPermission"),
+        document.getElementById("fixedPermission")
+      ].forEach((element) => {
+        if (!element) return;
+        element.classList.add("permission-text");
+        element.classList.remove(...classNames);
+        element.classList.add(toneClass);
+      });
+      const badge = document.getElementById("permissionStage");
+      const alertBox = document.getElementById("permissionAlert");
+      if (badge) {
+        badge.classList.add("permission-badge");
+        badge.classList.remove(...classNames);
+        badge.classList.add(toneClass);
+      }
+      if (alertBox) {
+        alertBox.classList.remove(...classNames);
+        alertBox.classList.add(toneClass);
+      }
+    }
+
+    const NOTIFY_COOLDOWN_MS = 90000;
+    let lastPermissionKey = "";
+    let lastChromePriceAt = 0;
+    const lastNotificationAt = {};
+
+    function canSendNotification(state) {
+      return ["short-ready", "sweep-short", "long-ready", "sweep-low", "short-invalid", "live-reassessment"].includes(state.key);
+    }
+
+    function showPermissionAlert(state) {
+      const alertBox = document.getElementById("permissionAlert");
+      document.getElementById("permissionAlertTitle").textContent = state.label;
+      document.getElementById("permissionAlertDetail").textContent = state.detail;
+      alertBox.classList.add("show");
+      if (["middle-wait", "low-wait", "watch"].includes(state.key)) {
+        window.clearTimeout(showPermissionAlert.hideTimer);
+        showPermissionAlert.hideTimer = window.setTimeout(() => alertBox.classList.remove("show"), 6000);
+      }
+    }
+
+    function sendDesktopNotification(state) {
+      if (!("Notification" in window) || Notification.permission !== "granted" || !canSendNotification(state)) return;
+      const now = Date.now();
+      if (now - (lastNotificationAt[state.key] || 0) < NOTIFY_COOLDOWN_MS) return;
+      lastNotificationAt[state.key] = now;
+      new Notification(`黄金交易许可：${state.label}`, {
+        body: state.detail,
+        tag: `gold-${state.key}`,
+        requireInteraction: false
+      });
+    }
+
+    function handlePermissionAlert(state) {
+      if (state.key !== lastPermissionKey) {
+        showPermissionAlert(state);
+        sendDesktopNotification(state);
+        lastPermissionKey = state.key;
+      }
+    }
+
+    async function requestTradeNotifications() {
+      const button = document.getElementById("notifyPermissionButton");
+      if (!("Notification" in window)) {
+        button.textContent = "不支持";
+        document.getElementById("permissionAlertDetail").textContent = "当前浏览器不支持桌面通知；站内提醒仍会显示。";
+        return;
+      }
+      if (location.protocol === "file:") {
+        button.textContent = "用网址";
+        document.getElementById("permissionAlertDetail").textContent = "请用 http 或 https 网址打开，file:// 页面不能稳定使用行情和通知。";
+        return;
+      }
+      const permission = await Notification.requestPermission();
+      button.textContent = permission === "granted" ? "已开启" : "未授权";
+      document.getElementById("permissionAlertDetail").textContent =
+        permission === "granted"
+          ? "已开启电脑通知：价格进入关键交易区间或失效区时会提醒。"
+          : "浏览器未授权通知；网页内提醒仍会显示。";
+    }
+
+    function applyPermissionState(state, payload) {
+      document.getElementById("stripPermission").textContent = state.label;
+      document.getElementById("stripPermissionMeta").textContent = state.detail;
+      document.getElementById("permissionStage").textContent = `交易许可：${state.label}｜${state.detail}`;
+      document.getElementById("fixedPermission").textContent = state.fixed;
+      document.getElementById("dynamicPermission").textContent = `${state.label}｜${state.action}`;
+      applyPermissionTone(state.tone);
+      handlePermissionAlert(state);
+      if (payload && Number.isFinite(payload.price)) {
+        document.getElementById("livePriceTop").textContent = formatPrice(payload.price);
+        const updatedAt = new Date((payload.received_at || Date.now() / 1000) * 1000).toLocaleTimeString("zh-CN", {
+          timeZone: "Asia/Kuala_Lumpur",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+        document.getElementById("livePriceMeta").textContent = `${payload.source || "后台行情"}｜${updatedAt} MYT｜用于动态许可，入场仍需看TV 5m/15m确认`;
+      }
+    }
+
+    async function refreshPricePermission() {
+      if (Date.now() - lastChromePriceAt < 8000) return;
+      try {
+        const response = await fetch("/api/price", {cache: "no-store"});
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "行情不可用");
+        applyPermissionState(buildPermissionState(Number(payload.price)), payload);
+      } catch (error) {
+        applyPermissionState(buildPermissionState(Number.NaN), null);
+        document.getElementById("livePriceTop").textContent = "行情已连接";
+        document.getElementById("livePriceMeta").textContent = `${error.message}；后台会继续重试，请同时以TV报价手动核对。`;
+      }
+    }
+
+    function renderChromeSync(payload) {
+      const list = document.getElementById("chromeSyncList");
+      const note = document.getElementById("chromeSyncNote");
+      const items = [];
+      if (payload.tradingview_price) {
+        lastChromePriceAt = Date.now();
+        const state = buildPermissionState(Number(payload.tradingview_price));
+        applyPermissionState(state, {
+          price: Number(payload.tradingview_price),
+          source: "Chrome TradingView",
+          received_at: payload.updated_at
+        });
+        const matrixNote = document.getElementById("matrixVersionNote");
+        if (matrixNote && Number(payload.tradingview_price) < tradePlan.breakdown) {
+          const state = buildPermissionState(Number(payload.tradingview_price));
+          const liveRebound = state.liveRebound ? `${state.liveRebound[0]}-${state.liveRebound[1]}` : "上方反抽区";
+          const liveScalp = state.liveScalp ? `${state.liveScalp[0]}-${state.liveScalp[1]}` : "下方止跌区";
+          matrixNote.textContent = `Chrome TradingView现价 ${formatPrice(payload.tradingview_price)} 已跌出旧策略框架：旧矩阵只作历史记录。当前实时重估矩阵：偏空延续，禁止低位追空；主力可能派发/二次入场观察 ${liveRebound} 反抽失败；下方扫流动性/止跌观察 ${liveScalp} 收回确认。具体入场仍需5m/15m承压或止跌截图确认。`;
+          matrixNote.classList.add("permission-danger");
+        }
+      }
+      if (payload.tabs && payload.tabs.length && list) {
+        payload.tabs.slice(0, 6).forEach((tab) => {
+          const item = document.createElement("div");
+          item.className = "news-preview-item";
+          const priceText = tab.price ? `｜报价 ${formatPrice(tab.price)}` : "";
+          item.textContent = `${tab.kind}${priceText}｜${tab.title}`;
+          items.push(item);
+        });
+      } else if (list) {
+        const item = document.createElement("div");
+        item.className = "news-preview-item";
+        item.textContent = payload.status === "已连接" ? "未发现TradingView或金十标签。" : payload.error || "Chrome同步暂不可用。";
+        items.push(item);
+      }
+      if (list) list.replaceChildren(...items);
+      const updatedAt = new Date((payload.updated_at || Date.now() / 1000) * 1000).toLocaleTimeString("zh-CN", {
+        timeZone: "Asia/Kuala_Lumpur",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+      if (note) note.textContent = `${payload.summary}｜${updatedAt} MYT｜${payload.note}`;
+    }
+
+    async function refreshChromeSync() {
+      try {
+        const response = await fetch("/api/chrome-snapshot", {cache: "no-store"});
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Chrome同步失败");
+        renderChromeSync(payload);
+      } catch (error) {
+        renderChromeSync({
+          updated_at: Date.now() / 1000,
+          status: "暂不可用",
+          error: error.message,
+          tabs: [],
+          summary: `Chrome同步暂不可用：${error.message}`,
+          note: "请确认Chrome已打开TradingView/金十，并允许Codex控制Chrome。"
+        });
+      }
+    }
+
+    const newsPanel = document.getElementById("newsPanel");
+    const newsList = document.getElementById("newsList");
+
+    function newsImpactClass(impact) {
+      if (impact.includes("利多")) return "positive";
+      if (impact.includes("利空")) return "negative";
+      return "";
+    }
+
+    function renderNewsItem(item) {
+      const card = document.createElement("article");
+      card.className = "news-item";
+      const meta = document.createElement("div");
+      meta.className = "news-item-meta";
+      const source = document.createElement("span");
+      source.textContent = `${item.source}｜${item.time}`;
+      const impact = document.createElement("span");
+      impact.className = `news-impact ${newsImpactClass(item.impact)}`;
+      impact.textContent = item.impact;
+      meta.append(source, impact);
+
+      const title = item.link ? document.createElement("a") : document.createElement("strong");
+      title.className = "news-item-title";
+      title.textContent = item.title;
+      if (item.link) {
+        title.href = item.link;
+        title.target = "_blank";
+        title.rel = "noopener noreferrer";
+      }
+      const analysis = document.createElement("p");
+      analysis.className = "news-item-analysis";
+      analysis.textContent = item.analysis;
+      card.append(meta, title, analysis);
+      return card;
+    }
+
+    async function refreshNews() {
+      try {
+        const response = await fetch("/api/news", {cache: "no-store"});
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "新闻源暂不可用");
+        newsList.replaceChildren(...payload.items.map(renderNewsItem));
+        const previewItems = payload.items.slice(0, 3).map((item) => {
+          const preview = document.createElement("div");
+          preview.className = "news-preview-item";
+          preview.textContent = `${item.time}｜${item.impact}｜${item.title}`;
+          return preview;
+        });
+        if (!previewItems.length) {
+          const empty = document.createElement("div");
+          empty.className = "news-preview-item";
+          empty.textContent = "今日暂未抓取到可核实的重要数据或相关官方快讯。";
+          previewItems.push(empty);
+        }
+        document.getElementById("newsPreview").replaceChildren(...previewItems);
+        const updatedAt = new Date(payload.updated_at * 1000).toLocaleString("zh-CN", {
+          timeZone: "Asia/Kuala_Lumpur",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+        document.getElementById("newsUpdatedAt").textContent = `${updatedAt} MYT｜24小时滚动｜每${payload.refresh_seconds}秒刷新`;
+        const connectedSources = payload.sources.filter((source) => source.status === "已连接").map((source) => source.source);
+        document.getElementById("newsStatus").textContent =
+          `金十：${payload.jin10.status}。官方源：${connectedSources.length ? connectedSources.join("、") : "暂不可用"}。${payload.jin10.note}`;
+        document.getElementById("newsMeetingView").textContent = `会议研判：${payload.meeting_view}`;
+      } catch (error) {
+        document.getElementById("newsUpdatedAt").textContent = "刷新失败";
+        document.getElementById("newsStatus").textContent = `${error.message}；不会把旧闻标记为即时新闻。`;
+      }
+    }
+
+    const chatPanel = document.getElementById("chatPanel");
+    const chatMessages = document.getElementById("chatMessages");
+    const chatInput = document.getElementById("chatInput");
+
+    function addChatMessage(text, role = "assistant") {
+      const message = document.createElement("div");
+      message.className = `chat-message${role === "user" ? " user" : ""}`;
+      message.textContent = text;
+      chatMessages.appendChild(message);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function showConnectionGuide() {
+      if (document.getElementById("chatConnectionGuide")) return;
+      const guide = document.createElement("div");
+      guide.id = "chatConnectionGuide";
+      guide.className = "chat-message connection-guide";
+      const title = document.createElement("strong");
+      title.textContent = "会议分析后台未连接";
+      const detail = document.createElement("span");
+      detail.textContent = "公开版可以查看看板、TradingView图表和策略内容；实时AI助手、Chrome同步与新闻后台需要单独部署后端服务。";
+      guide.append(title, detail);
+      chatMessages.appendChild(guide);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    const CHAT_STORAGE_KEY = "gold-meeting-chat-history-v1";
+    let chatHistory = [];
+
+    try {
+      const savedHistory = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "[]");
+      if (Array.isArray(savedHistory)) chatHistory = savedHistory.slice(-20);
+    } catch (error) {
+      chatHistory = [];
+    }
+
+    chatHistory.forEach((item) => {
+      if (item && typeof item.content === "string") addChatMessage(item.content, item.role);
+    });
+
+    function saveChatHistory() {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatHistory.slice(-20)));
+    }
+
+    function readMeetingSection(id, label) {
+      const element = document.getElementById(id);
+      if (!element) return `${label}：网页模块缺失`;
+      return `${label}：\n${element.innerText.replace(/\s+/g, " ").trim()}`;
+    }
+
+    function getDashboardContext() {
+      return [
+        "数据限制：顶部 TradingView 组件可显示报价，但网页脚本与会议助手无法读取 iframe 内部实时价格、K线结构和指标数值。",
+        "上下文规则：以下内容是网页当前会议基线；涉及实时入场许可时，仍需用户提供最新价格或截图确认。",
+        readMeetingSection("meeting-summary-strip", "交易摘要"),
+        readMeetingSection("meeting-decision-cockpit", "交易决策驾驶舱"),
+        readMeetingSection("meeting-analysis-summary", "会议分析总结"),
+        readMeetingSection("meeting-key-trade-card", "最关键交易卡"),
+        readMeetingSection("meeting-scenarios", "三大剧本"),
+        readMeetingSection("meeting-forbidden-trades", "禁止交易规则"),
+        readMeetingSection("meeting-position-management", "仓位管理"),
+        readMeetingSection("meeting-macro-data", "宏观数据"),
+        readMeetingSection("newsPanel", "即时新闻与数据研判"),
+        readMeetingSection("main-force-matrix", "主力入场与派发矩阵"),
+        "账户风控：账户约3000美金；默认0.03-0.05手；A级0.06-0.10手；B级0.02-0.05手；C级不做或0.01手；单笔风险30-45美金，最高60美金；日亏损达到90美金停止交易。"
+      ].join("\n\n");
+    }
+
+    async function askAnalysisAI(question) {
+      const thinking = document.createElement("div");
+      thinking.className = "chat-message";
+      thinking.textContent = "正在理解你的问题，并核对当前看板证据...";
+      chatMessages.appendChild(thinking);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            question,
+            context: getDashboardContext(),
+            history: chatHistory
+          })
+        });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "AI 分析服务暂不可用");
+        thinking.remove();
+        addChatMessage(payload.answer);
+        chatHistory.push({role: "assistant", content: payload.answer});
+        chatHistory = chatHistory.slice(-20);
+        saveChatHistory();
+      } catch (error) {
+        thinking.textContent = error.message;
+        if (error.message.includes("后台未启动") || error.message.includes("暂不可用")) {
+          showConnectionGuide();
+        }
+      }
+    }
+
+    async function checkChatConnection() {
+      try {
+        const response = await fetch("/api/status", {cache: "no-store"});
+        const status = await response.json();
+        document.getElementById("chatConnection").textContent = status.connected
+          ? `${status.model}｜无需 API`
+          : "本地会议分析未启动";
+        if (!status.connected) showConnectionGuide();
+      } catch (error) {
+        document.getElementById("chatConnection").textContent = "AI 后台未启动";
+      }
+    }
+
+    document.getElementById("chatLauncher").addEventListener("click", () => {
+      newsPanel.classList.remove("open");
+      chatPanel.classList.toggle("open");
+      if (chatPanel.classList.contains("open")) chatInput.focus();
+    });
+    document.getElementById("newsLauncher").addEventListener("click", () => {
+      chatPanel.classList.remove("open");
+      newsPanel.classList.toggle("open");
+      if (newsPanel.classList.contains("open")) refreshNews();
+    });
+    document.getElementById("newsPreviewOpen").addEventListener("click", () => {
+      chatPanel.classList.remove("open");
+      newsPanel.classList.add("open");
+      refreshNews();
+    });
+    document.getElementById("newsClose").addEventListener("click", () => newsPanel.classList.remove("open"));
+    document.getElementById("chatClose").addEventListener("click", () => chatPanel.classList.remove("open"));
+    document.getElementById("chatReset").addEventListener("click", () => {
+      chatHistory = [];
+      localStorage.removeItem(CHAT_STORAGE_KEY);
+      chatMessages.replaceChildren();
+      addChatMessage("对话已清空。请直接告诉我你现在最关心的问题。");
+    });
+    document.querySelectorAll("[data-question]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const question = button.dataset.question;
+        addChatMessage(question, "user");
+        chatHistory.push({role: "user", content: question});
+        saveChatHistory();
+        askAnalysisAI(question);
+      });
+    });
+    document.getElementById("chatForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const question = chatInput.value.trim();
+      if (!question) return;
+      addChatMessage(question, "user");
+      chatHistory.push({role: "user", content: question});
+      saveChatHistory();
+      chatInput.value = "";
+      askAnalysisAI(question);
+    });
+    document.getElementById("notifyPermissionButton").addEventListener("click", requestTradeNotifications);
+
+    updateTime();
+    markOverdueEconomicData();
+    checkChatConnection();
+    refreshNews();
+    refreshChromeSync();
+    refreshPricePermission();
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    }
+    setInterval(updateTime, 30000);
+    setInterval(markOverdueEconomicData, 60000);
+    setInterval(refreshNews, 60000);
+    setInterval(refreshChromeSync, 5000);
+    setInterval(refreshPricePermission, 3000);
+  </script>
+</body>
+</html>

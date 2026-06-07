@@ -1845,6 +1845,38 @@
       }
     }
 
+    function applyRealtimeSnapshot(payload) {
+      if (!payload || !payload.permission) return;
+      const state = {
+        key: `backend-${payload.permission.label}`,
+        label: payload.permission.label,
+        detail: payload.permission.detail,
+        fixed: payload.permission.label,
+        action: payload.permission.action,
+        tone: payload.permission.tone || "neutral"
+      };
+      applyPermissionState(state, payload.quote ? {
+        price: Number(payload.quote.price),
+        source: payload.quote.source || "实时后台",
+        received_at: payload.quote.received_at || payload.updated_at
+      } : null);
+      const dynamic = document.getElementById("dynamicPermission");
+      if (dynamic && payload.analysis && payload.analysis.overall_sentiment) {
+        dynamic.textContent = `${payload.permission.label}｜${payload.analysis.overall_sentiment}`;
+      }
+    }
+
+    async function refreshRealtimeSnapshot() {
+      try {
+        const response = await fetch("/api/realtime-snapshot", {cache: "no-store"});
+        if (!response.ok) return;
+        const payload = await response.json();
+        applyRealtimeSnapshot(payload);
+      } catch (error) {
+        // Public static pages do not have this backend yet. Existing widgets and fallback APIs continue to work.
+      }
+    }
+
     async function refreshPricePermission() {
       if (Date.now() - lastChromePriceAt < 8000) return;
       try {
@@ -2157,6 +2189,7 @@
     markOverdueEconomicData();
     checkChatConnection();
     refreshNews();
+    refreshRealtimeSnapshot();
     refreshChromeSync();
     refreshPricePermission();
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
@@ -2165,6 +2198,7 @@
     setInterval(updateTime, 30000);
     setInterval(markOverdueEconomicData, 60000);
     setInterval(refreshNews, 60000);
+    setInterval(refreshRealtimeSnapshot, 5000);
     setInterval(refreshChromeSync, 5000);
     setInterval(refreshPricePermission, 3000);
   </script>

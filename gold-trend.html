@@ -1320,6 +1320,17 @@
           </div>
         </section>
 
+        <section class="panel pad" id="data-connection-card">
+          <h2>数据连接状态</h2>
+          <div class="permission-list" style="margin-top: 12px;">
+            <div class="permission-row"><span>TV 实时价格</span><strong id="tvConnectionStatus">Chrome标题跟踪中</strong></div>
+            <div class="permission-row"><span>TV 指标/K线</span><strong>需截图或授权K线API</strong></div>
+            <div class="permission-row"><span>金十数据</span><strong id="jin10ConnectionStatus">等待Chrome正文权限/API</strong></div>
+            <div class="permission-row"><span>交易许可</span><strong>TV价格优先，后台价格备用</strong></div>
+          </div>
+          <p class="footer-note">本地实时版会优先读取你Chrome里TradingView标签标题的XAUUSD价格；TradingView画布、私人指标和金十正文需要Chrome允许Apple事件中的JavaScript，或接入正式授权API。</p>
+        </section>
+
         <section class="panel pad" id="meeting-macro-data">
           <h2>宏观数据日历｜未来关键窗口</h2>
           <div class="event-list">
@@ -1377,7 +1388,7 @@
         <div class="risk-grid" style="margin-top: 12px;">
           <div class="risk-card"><h3>低位不追空</h3><p>当前约4439-4440，靠近4436-4424支撑带；趋势虽偏空，但这里直接追空容易卖在短线低位。</p></div>
           <div class="risk-card"><h3>空单必须等反抽</h3><p>第一空点收窄到4458-4463；没有5m/15m承压或MA/EMA动能转弱，不提前挂空。</p></div>
-          <div class="risk-card"><h3>非农前后降仓</h3><p>20:30 MYT非农公布前30分钟不做普通新单；公布后等第一波波动结束再按技术位执行。</p></div>
+          <div class="risk-card"><h3>重大数据前后降仓</h3><p>CPI、PPI、NFP、FOMC等高影响数据公布前30分钟不做普通新单；公布后等第一波波动结束，再按5m/15m结构确认执行。</p></div>
           <div class="risk-card"><h3>低位多必须扫低收回</h3><p>4436-4424只有出现扫低收回才考虑4432-4438的0.01手小多；若跌破4424并回踩失败，多头取消。</p></div>
         </div>
       </article>
@@ -1581,6 +1592,10 @@
   </aside>
 
   <script>
+    if (location.protocol === "file:") {
+      location.replace("http://localhost:8123/gold-trend.html");
+    }
+
     const reportTime = document.getElementById("reportTime");
     function updateTime() {
       reportTime.textContent = new Date().toLocaleString("zh-CN", {
@@ -1846,6 +1861,7 @@
     }
 
     function applyRealtimeSnapshot(payload) {
+      if (Date.now() - lastChromePriceAt < 12000) return;
       if (!payload || !payload.permission) return;
       const state = {
         key: `backend-${payload.permission.label}`,
@@ -1878,7 +1894,7 @@
     }
 
     async function refreshPricePermission() {
-      if (Date.now() - lastChromePriceAt < 8000) return;
+      if (Date.now() - lastChromePriceAt < 12000) return;
       try {
         const response = await fetch("/api/price", {cache: "no-store"});
         const payload = await response.json();
@@ -1895,8 +1911,14 @@
       const list = document.getElementById("chromeSyncList");
       const note = document.getElementById("chromeSyncNote");
       const items = [];
+      const tvConnectionStatus = document.getElementById("tvConnectionStatus");
+      const jin10ConnectionStatus = document.getElementById("jin10ConnectionStatus");
       if (payload.tradingview_price) {
         lastChromePriceAt = Date.now();
+        if (tvConnectionStatus) {
+          tvConnectionStatus.textContent = `已连接｜${formatPrice(payload.tradingview_price)}`;
+          tvConnectionStatus.classList.add("permission-short");
+        }
         const state = buildPermissionState(Number(payload.tradingview_price));
         applyPermissionState(state, {
           price: Number(payload.tradingview_price),
@@ -1910,6 +1932,25 @@
           const liveScalp = state.liveScalp ? `${state.liveScalp[0]}-${state.liveScalp[1]}` : "下方止跌区";
           matrixNote.textContent = `Chrome TradingView现价 ${formatPrice(payload.tradingview_price)} 已跌出旧策略框架：旧矩阵只作历史记录。当前实时重估矩阵：偏空延续，禁止低位追空；主力可能派发/二次入场观察 ${liveRebound} 反抽失败；下方扫流动性/止跌观察 ${liveScalp} 收回确认。具体入场仍需5m/15m承压或止跌截图确认。`;
           matrixNote.classList.add("permission-danger");
+        }
+      } else if (tvConnectionStatus) {
+        tvConnectionStatus.textContent = "未读到TV标题价格";
+        tvConnectionStatus.classList.add("permission-danger");
+      }
+      if (jin10ConnectionStatus && payload.tabs) {
+        const jin10Tab = payload.tabs.find((tab) => tab.kind === "金十数据");
+        if (!jin10Tab) {
+          jin10ConnectionStatus.textContent = "未发现Chrome金十标签";
+          jin10ConnectionStatus.classList.add("permission-danger");
+        } else if ((jin10Tab.text_status || "").startsWith("JS_READ_ERROR")) {
+          jin10ConnectionStatus.textContent = "已发现标签｜需开启JS权限";
+          jin10ConnectionStatus.classList.add("permission-wait");
+        } else if ((jin10Tab.text || "").length > 80) {
+          jin10ConnectionStatus.textContent = "Chrome正文跟踪中";
+          jin10ConnectionStatus.classList.add("permission-short");
+        } else {
+          jin10ConnectionStatus.textContent = "已发现标签｜等待正文";
+          jin10ConnectionStatus.classList.add("permission-wait");
         }
       }
       if (payload.tabs && payload.tabs.length && list) {
